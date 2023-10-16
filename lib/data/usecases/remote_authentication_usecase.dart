@@ -16,8 +16,8 @@ class RemoteAuthenticationUsecase {
 
     try {
       await httpClient.request(url: url, method: 'post', body: body);
-    } on HttpError {
-      throw DomainError.unexpected;
+    } on HttpError catch (httpError) {
+      throw DomainError.throwFromHttpError(httpError);
     }
   }
 }
