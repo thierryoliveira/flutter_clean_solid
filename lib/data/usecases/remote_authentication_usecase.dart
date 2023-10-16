@@ -1,3 +1,5 @@
+import 'package:flutter_clean_solid/domain/entities/entities.dart';
+
 import '../../domain/helpers/helpers.dart';
 import '../../domain/usecases/usecases.dart';
 import '../http/http.dart';
@@ -11,11 +13,13 @@ class RemoteAuthenticationUsecase {
     required this.url,
   });
 
-  Future<void> auth({required AuthenticationParams params}) async {
+  Future<AccountEntity> auth({required AuthenticationParams params}) async {
     final body = RemoteAuthenticationParams.fromEntity(params).toJson();
 
     try {
-      await httpClient.request(url: url, method: 'post', body: body);
+      final response =
+          await httpClient.request(url: url, method: 'post', body: body);
+      return AccountEntity.fromJson(response);
     } on HttpError catch (httpError) {
       throw DomainError.throwFromHttpError(httpError);
     }

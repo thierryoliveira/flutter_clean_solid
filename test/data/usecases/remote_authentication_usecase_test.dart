@@ -24,10 +24,12 @@ void main() {
 
   test('should calls HttpClient with the correct URL', () async {
     when(() => httpClient.request(
-          url: any(named: 'url'),
-          method: any(named: 'method'),
-          body: any(named: 'body'),
-        )).thenAnswer((invocation) => Future.value());
+              url: any(named: 'url'),
+              method: any(named: 'method'),
+              body: any(named: 'body'),
+            ))
+        .thenAnswer((invocation) async =>
+            {'accessToken': faker.guid.guid(), 'name': faker.person.name()});
 
     await sut.auth(params: params);
 
@@ -96,5 +98,21 @@ void main() {
     final future = sut.auth(params: params);
 
     expect(future, throwsA(DomainError.invalidCredentials));
+  });
+
+  test('should return AccountEntity if Httpclient returns 200', () async {
+    final token = faker.guid.guid();
+
+    when(() => httpClient.request(
+              url: any(named: 'url'),
+              method: any(named: 'method'),
+              body: any(named: 'body'),
+            ))
+        .thenAnswer(
+            (_) async => {'accessToken': token, 'name': faker.person.name()});
+
+    final response = await sut.auth(params: params);
+
+    expect(response.token, token);
   });
 }
