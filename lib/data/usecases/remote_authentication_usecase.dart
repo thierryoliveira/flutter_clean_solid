@@ -11,7 +11,17 @@ class RemoteAuthenticationUsecase {
   });
 
   Future<void> auth({required AuthenticationParams params}) async {
-    final body = params.toJson();
+    final body = RemoteAuthenticationParams.fromEntity(params).toJson();
     await httpClient.request(url: url, method: 'post', body: body);
   }
+}
+
+class RemoteAuthenticationParams extends AuthenticationParams {
+  RemoteAuthenticationParams({required super.email, required super.password});
+
+  factory RemoteAuthenticationParams.fromEntity(AuthenticationParams entity) =>
+      RemoteAuthenticationParams(
+          email: entity.email, password: entity.password);
+
+  Map<String, dynamic> toJson() => {'email': email, 'password': password};
 }
