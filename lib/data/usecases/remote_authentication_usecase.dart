@@ -1,3 +1,4 @@
+import 'package:flutter_clean_solid/data/models/models.dart';
 import 'package:flutter_clean_solid/domain/entities/entities.dart';
 
 import '../../domain/helpers/helpers.dart';
@@ -19,7 +20,7 @@ class RemoteAuthenticationUsecase {
     try {
       final response =
           await httpClient.request(url: url, method: 'post', body: body);
-      return AccountEntity.fromJson(response);
+      return RemoteAccountModel.fromJson(response).toEntity();
     } on HttpError catch (httpError) {
       throw DomainError.throwFromHttpError(httpError);
     }
