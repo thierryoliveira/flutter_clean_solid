@@ -5,7 +5,7 @@ import '../../domain/helpers/helpers.dart';
 import '../../domain/usecases/usecases.dart';
 import '../http/http.dart';
 
-class RemoteAuthenticationUsecase {
+class RemoteAuthenticationUsecase implements AuthenticationUseCase {
   final HttpClient httpClient;
   final String url;
 
@@ -14,6 +14,7 @@ class RemoteAuthenticationUsecase {
     required this.url,
   });
 
+  @override
   Future<AccountEntity> auth({required AuthenticationParams params}) async {
     final body = RemoteAuthenticationParams.fromEntity(params).toJson();
 
