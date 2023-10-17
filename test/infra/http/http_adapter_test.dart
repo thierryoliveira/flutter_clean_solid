@@ -15,9 +15,14 @@ class HttpAdapter {
   Future<void> request({
     required String url,
     required HttpMethods method,
+    Map<String, dynamic>? headers,
   }) async {
+    final defaultHeaders = {
+      'content-type': 'application/json',
+      'accept': 'application/json',
+    };
     final uri = Uri.parse(url);
-    await client.post(uri);
+    await client.post(uri, headers: {...defaultHeaders, ...?headers});
   }
 }
 
@@ -47,5 +52,36 @@ void main() {
     await sut.request(url: url, method: HttpMethods.post);
 
     verify(() => client.post(uri));
+  });
+
+  test('should call post with correct values', () async {
+    when(() => client.post(any()))
+        .thenAnswer((invocation) async => Response('anything', 200));
+
+    await sut.request(url: url, method: HttpMethods.post);
+
+    verify(() => client.post(uri));
+  });
+
+  test('should call post with correct headers', () async {
+    when(() => client.post(any(), headers: any(named: 'headers')))
+        .thenAnswer((invocation) async => Response('anything', 200));
+
+    await sut.request(
+      url: url,
+      method: HttpMethods.post,
+      headers: {
+        'custom-header': 'custom-value',
+      },
+    );
+
+    verify(() => client.post(
+          uri,
+          headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            'custom-header': 'custom-value',
+          },
+        ));
   });
 }
