@@ -1,20 +1,22 @@
 import 'dart:convert';
 
 import 'package:faker/faker.dart';
+import 'package:flutter_clean_solid/data/http/http_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:flutter_clean_solid/infra/http/http.dart';
 
-class HttpAdapter {
+class HttpAdapter implements HttpClient {
   final Client client;
 
   HttpAdapter({
     required this.client,
   });
 
-  Future<void> request({
+  @override
+  Future<Map<String, dynamic>> request({
     required String url,
     required HttpMethods method,
     Map<String, dynamic>? headers,
@@ -26,8 +28,9 @@ class HttpAdapter {
     };
     final uri = Uri.parse(url);
     final jsonBody = body != null ? jsonEncode(body) : null;
-    await client.post(uri,
+    final response = await client.post(uri,
         headers: {...defaultHeaders, ...?headers}, body: jsonBody);
+    return response.body.isNotEmpty ? jsonDecode(response.body) : {};
   }
 }
 
@@ -50,11 +53,12 @@ void main() {
     sut = HttpAdapter(client: client);
   });
 
-  group('post', () {
-    test('should call post with correct values', () async {
+  group('post:', () {
+    test('should request with correct values', () async {
       when(() => client.post(any(),
               headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((invocation) async => Response('anything', 200));
+          .thenAnswer(
+              (invocation) async => Response('{"country":"Brazil"}', 200));
 
       await sut.request(url: url, method: HttpMethods.post, body: {
         'any_key': 'any_value',
@@ -70,10 +74,11 @@ void main() {
           ));
     });
 
-    test('should call post properly without body', () async {
+    test('should request properly without body', () async {
       when(() => client.post(any(),
               headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((invocation) async => Response('anything', 200));
+          .thenAnswer(
+              (invocation) async => Response('{"country":"Brazil"}', 200));
 
       await sut.request(url: url, method: HttpMethods.post);
 
@@ -83,9 +88,9 @@ void main() {
           ));
     });
 
-    test('should call post with correct custom headers', () async {
-      when(() => client.post(any(), headers: any(named: 'headers')))
-          .thenAnswer((invocation) async => Response('anything', 200));
+    test('should request with correct custom headers', () async {
+      when(() => client.post(any(), headers: any(named: 'headers'))).thenAnswer(
+          (invocation) async => Response('{"country":"Brazil"}', 200));
 
       await sut.request(
         url: url,
@@ -102,6 +107,38 @@ void main() {
               'accept': 'application/json',
               'custom-header': 'custom-value',
             },
+          ));
+    });
+
+    test('should return data if post returns 200', () async {
+      when(() => client.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
+          .thenAnswer(
+              (invocation) async => Response('{"country":"Brazil"}', 200));
+
+      final response = await sut.request(url: url, method: HttpMethods.post);
+
+      expect(response, {'country': 'Brazil'});
+
+      verify(() => client.post(
+            any(),
+            headers: any(named: 'headers'),
+          ));
+    });
+
+    test('should return empty map if post returns 200 with empty body',
+        () async {
+      when(() => client.post(any(),
+              headers: any(named: 'headers'), body: any(named: 'body')))
+          .thenAnswer((invocation) async => Response('', 200));
+
+      final response = await sut.request(url: url, method: HttpMethods.post);
+
+      expect(response, {});
+
+      verify(() => client.post(
+            any(),
+            headers: any(named: 'headers'),
           ));
     });
   });
