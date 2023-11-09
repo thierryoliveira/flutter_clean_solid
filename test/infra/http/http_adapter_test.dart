@@ -174,5 +174,13 @@ void main() {
 
       expect(futureException, throwsA(HttpError.serverError));
     });
+
+    test('should return ServerError if post throws an exception', () async {
+      mockRequest().thenThrow(Exception());
+
+      final futureException = sut.request(url: url, method: HttpMethods.post);
+
+      expect(futureException, throwsA(HttpError.serverError));
+    });
   });
 }
