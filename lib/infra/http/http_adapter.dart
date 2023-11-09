@@ -40,7 +40,10 @@ class HttpAdapter implements HttpClient {
       return {};
     } else if (response.statusCode == HttpStatusCodes.badRequest.code) {
       throw HttpError.badRequest;
+    } else if (response.statusCode == HttpStatusCodes.unauthorized.code) {
+      throw HttpError.unauthorized;
     }
+
     throw HttpError.serverError;
   }
 }
