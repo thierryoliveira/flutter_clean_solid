@@ -3,6 +3,7 @@ import 'package:flutter_clean_solid/data/http/http.dart';
 import 'package:flutter_clean_solid/data/usecases/usecases.dart';
 import 'package:flutter_clean_solid/domain/helpers/helpers.dart';
 import 'package:flutter_clean_solid/domain/usecases/usecases.dart';
+import 'package:flutter_clean_solid/infra/http/http.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -47,7 +48,7 @@ void main() {
 
     verify(() => httpClient.request(
         url: url,
-        method: 'post',
+        method: HttpMethods.post,
         body: {'email': params.email, 'password': params.password}));
   });
 
