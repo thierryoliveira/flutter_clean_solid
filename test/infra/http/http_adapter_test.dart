@@ -54,12 +54,20 @@ void main() {
   });
 
   group('post:', () {
-    test('should request with correct values', () async {
-      when(() => client.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer(
-              (invocation) async => Response('{"country":"Brazil"}', 200));
+    When mockRequest() => when(() => client.post(any(),
+        headers: any(named: 'headers'), body: any(named: 'body')));
 
+    void mockResponse(
+        {int statusCode = 200, String body = '{"country":"Brazil"}'}) {
+      mockRequest().thenAnswer((invocation) async =>
+          Response(body, statusCode, request: Request('POST', uri)));
+    }
+
+    setUp(() {
+      mockResponse();
+    });
+
+    test('should request with correct values', () async {
       await sut.request(url: url, method: HttpMethods.post, body: {
         'any_key': 'any_value',
       });
@@ -75,11 +83,6 @@ void main() {
     });
 
     test('should request properly without body', () async {
-      when(() => client.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer(
-              (invocation) async => Response('{"country":"Brazil"}', 200));
-
       await sut.request(url: url, method: HttpMethods.post);
 
       verify(() => client.post(
@@ -89,9 +92,6 @@ void main() {
     });
 
     test('should request with correct custom headers', () async {
-      when(() => client.post(any(), headers: any(named: 'headers'))).thenAnswer(
-          (invocation) async => Response('{"country":"Brazil"}', 200));
-
       await sut.request(
         url: url,
         method: HttpMethods.post,
@@ -111,11 +111,6 @@ void main() {
     });
 
     test('should return data if post returns 200', () async {
-      when(() => client.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer(
-              (invocation) async => Response('{"country":"Brazil"}', 200));
-
       final response = await sut.request(url: url, method: HttpMethods.post);
 
       expect(response, {'country': 'Brazil'});
@@ -128,9 +123,7 @@ void main() {
 
     test('should return empty map if post returns 200 with empty body',
         () async {
-      when(() => client.post(any(),
-              headers: any(named: 'headers'), body: any(named: 'body')))
-          .thenAnswer((invocation) async => Response('', 200));
+      mockResponse(body: '');
 
       final response = await sut.request(url: url, method: HttpMethods.post);
 
