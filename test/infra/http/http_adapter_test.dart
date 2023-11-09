@@ -30,7 +30,9 @@ class HttpAdapter implements HttpClient {
     final jsonBody = body != null ? jsonEncode(body) : null;
     final response = await client.post(uri,
         headers: {...defaultHeaders, ...?headers}, body: jsonBody);
-    return response.body.isNotEmpty ? jsonDecode(response.body) : {};
+    return response.body.isEmpty || response.statusCode == 204
+        ? {}
+        : jsonDecode(response.body);
   }
 }
 
@@ -59,8 +61,8 @@ void main() {
 
     void mockResponse(
         {int statusCode = 200, String body = '{"country":"Brazil"}'}) {
-      mockRequest().thenAnswer((invocation) async =>
-          Response(body, statusCode, request: Request('POST', uri)));
+      mockRequest()
+          .thenAnswer((invocation) async => Response(body, statusCode));
     }
 
     setUp(() {
@@ -131,6 +133,34 @@ void main() {
 
       verify(() => client.post(
             any(),
+            headers: any(named: 'headers'),
+          ));
+    });
+
+    test('should return empty map if post returns 204', () async {
+      mockResponse(statusCode: 204, body: '');
+
+      final response = await sut.request(url: url, method: HttpMethods.post);
+
+      expect(response, {});
+
+      verify(() => client.post(
+            any(),
+            headers: any(named: 'headers'),
+          ));
+    });
+
+    test('should return empty map if post returns 204 with data in the body',
+        () async {
+      mockResponse(statusCode: 204);
+
+      final response = await sut.request(url: url, method: HttpMethods.post);
+
+      expect(response, {});
+
+      verify(() => client.post(
+            any(),
+            body: any(named: 'body'),
             headers: any(named: 'headers'),
           ));
     });
