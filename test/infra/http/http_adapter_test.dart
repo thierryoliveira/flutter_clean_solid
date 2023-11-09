@@ -1,4 +1,5 @@
 import 'package:faker/faker.dart';
+import 'package:flutter_clean_solid/data/http/http_error.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:mocktail/mocktail.dart';
@@ -132,6 +133,14 @@ void main() {
             body: any(named: 'body'),
             headers: any(named: 'headers'),
           ));
+    });
+
+    test('should return BadRequestError if post returns 400', () async {
+      mockResponse(statusCode: 400);
+
+      final futureException = sut.request(url: url, method: HttpMethods.post);
+
+      expect(futureException, throwsA(HttpError.badRequest));
     });
   });
 }

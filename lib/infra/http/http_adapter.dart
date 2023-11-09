@@ -32,10 +32,15 @@ class HttpAdapter implements HttpClient {
   }
 
   Map<String, dynamic> _handleResponse(Response response) {
-    if (response.statusCode == HttpStatusCodes.noContent.code ||
+    if (response.statusCode == HttpStatusCodes.ok.code &&
+        response.body.isNotEmpty) {
+      return jsonDecode(response.body);
+    } else if (response.statusCode == HttpStatusCodes.noContent.code ||
         response.body.isEmpty) {
       return {};
+    } else if (response.statusCode == HttpStatusCodes.badRequest.code) {
+      throw HttpError.badRequest;
     }
-    return jsonDecode(response.body);
+    throw HttpError.serverError;
   }
 }

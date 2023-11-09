@@ -1,5 +1,7 @@
 enum HttpStatusCodes {
-  noContent(code: 204);
+  ok(code: 200),
+  noContent(code: 204),
+  badRequest(code: 400);
 
   /// Represents the HTTP status code related to each enum value.
   final int code;
